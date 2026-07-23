@@ -24,18 +24,14 @@ static ssize_t (*orig_recv)(int, void*, size_t, int) = NULL;
 static ssize_t (*orig_sendto)(int, const void*, size_t, int, const struct sockaddr*, socklen_t) = NULL;
 static ssize_t (*orig_recvfrom)(int, void*, size_t, int, struct sockaddr*, socklen_t*) = NULL;
 
-// Configuration - More aggressive network obfuscation
-#define MIN_DELAY_US 2000     // 2ms minimum delay (was 1ms)
-#define MAX_DELAY_US 10000    // 10ms maximum delay (was 5ms)
-#define DELAY_PROBABILITY 50  // 50% chance to add delay (was 30%)
-#define BURST_DELAY 20000     // 20ms delay for burst detection
-#define BURST_THRESHOLD 10    // Packets before burst delay
+// Configuration
+#define MIN_DELAY_US 1000     // 1ms minimum delay
+#define MAX_DELAY_US 5000     // 5ms maximum delay
+#define DELAY_PROBABILITY 30  // 30% chance to add delay
 
 static pthread_mutex_t traffic_mutex = PTHREAD_MUTEX_INITIALIZER;
 static unsigned long long total_sent = 0;
 static unsigned long long total_recv = 0;
-static unsigned int packet_count = 0;
-static time_t last_burst_time = 0;
 
 // Initialize hooks
 static void init_net_hooks(void) {
@@ -47,32 +43,12 @@ static void init_net_hooks(void) {
     }
 }
 
-// Add random delay to break timing patterns - MORE AGGRESSIVE
+// Add random delay to break timing patterns
 static void randomize_timing(void) {
-    pthread_mutex_lock(&traffic_mutex);
-    packet_count++;
-    
-    // Detect burst traffic and add extra delay
-    time_t now = time(NULL);
-    if (packet_count >= BURST_THRESHOLD && (now - last_burst_time) < 2) {
-        pthread_mutex_unlock(&traffic_mutex);
-        usleep(BURST_DELAY);
-        pthread_mutex_lock(&traffic_mutex);
-        packet_count = 0;
-        last_burst_time = now;
-    }
-    
-    pthread_mutex_unlock(&traffic_mutex);
-    
-    // Higher probability of delay
+    // Only add delay occasionally to avoid massive performance hit
     if ((rand() % 100) < DELAY_PROBABILITY) {
         unsigned int delay = MIN_DELAY_US + (rand() % (MAX_DELAY_US - MIN_DELAY_US));
         usleep(delay);
-    }
-    
-    // Random micro-delays to break consistent timing
-    if ((rand() % 100) < 25) { // 25% chance of micro-delay
-        usleep((rand() % 1000)); // 0-1ms micro-delay
     }
 }
 
